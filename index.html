@@ -1667,10 +1667,15 @@ fillAbilityList('Atk',selectedLoom(atkSel));fillAbilityList('Def',selectedLoom(d
  const HAS_GAMMA=new Set(VARIANTS.filter(v=>/\bGamma\b/i.test(v.name||'')).map(v=>v.species));
  const statsByName=new Map(LOOMIANS.map(x=>[x.name,x]));
  const statsByBase=new Map();LOOMIANS.forEach(x=>{const b=x.name.replace(/\s*\([^)]*\)\s*$/,'');if(!statsByBase.has(b))statsByBase.set(b,x)});
- const all=[],seen=new Set();
+ const all=[],seen=new Set(),seenPlainSpecies=new Set();
  const SOUL_BASE_TO_FORM=new Map();
  LOOMIANS.filter(x=>typeof isSoulburst==='function'&&isSoulburst(x.name)).forEach(x=>SOUL_BASE_TO_FORM.set(x.name.replace(/\s*\([^)]*\)\s*$/,''),x));
  function addCandidate(v){
+   // Keep only one ordinary/base selection per species. Event skins, colours/forms,
+   // gender variants and Soul Burst entries remain separate choices.
+   const plainVariant=!v.soulburst&&!v.reskin&&(v.category==='Non-event'||!v.event)&&v.name===v.species;
+   if(plainVariant&&seenPlainSpecies.has(v.species))return;
+   if(plainVariant)seenPlainSpecies.add(v.species);
    let stats=statsByName.get(v.species)||statsByBase.get(v.species);
    if(!stats)return;
    // Soul Burst selections must use the transformed form's own stats and typing.
